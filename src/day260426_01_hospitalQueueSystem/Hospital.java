@@ -22,8 +22,7 @@ class HospitalMachine {
 
     public static Ticket generateTicket(String name, int age) {
         totalTicket++;
-        Ticket patient = new Ticket(totalTicket, name, age);
-        return patient;
+        return new Ticket(totalTicket, name, age);
     }
 
     public static void callNextPatient() {
