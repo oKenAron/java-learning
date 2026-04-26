@@ -50,7 +50,7 @@ class Ticket {
 
 }
 
-public class BankQueueSystem {
+public class HospitalQueueSystem {
     // 你别管为啥名字叫银行排号系统结果排的是医院的号, 问就是我记岔了.
     public static void main(String[] args){
         Ticket userTrump = new Ticket("Trump" , 79);
