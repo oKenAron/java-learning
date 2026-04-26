@@ -1,4 +1,4 @@
-package day260426_basics;
+package day260426_00_basics;
 
 public class AdditionTask {
     public static void main(String[] args){

@@ -1,4 +1,4 @@
-package day260426_basics;
+package day260426_00_basics;
 
 class Ticket {
     // 为了统计全局挂号数, 设置该全局静态变量

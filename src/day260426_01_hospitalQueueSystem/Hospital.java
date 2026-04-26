@@ -1,4 +1,4 @@
-package day260426_basics;
+package day260426_01_hospitalQueueSystem;
 
 class HosTicket {
     private final int ticketNumber;
