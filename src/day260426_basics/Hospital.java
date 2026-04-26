@@ -1,3 +1,5 @@
+package day260426_basics;
+
 class HosTicket {
     private final int ticketNumber;
     private final String patientName;

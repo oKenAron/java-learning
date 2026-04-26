@@ -1,3 +1,5 @@
+package day260426_basics;
+
 public class AdditionTask {
     public static void main(String[] args){
         int num1 = 10;
