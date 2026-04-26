@@ -12,7 +12,7 @@ class Ticket {
     }
 
     public void getTicketInfo() {
-        System.out.printf("您好患者，您的信息如下:\n姓名: %s, 年龄: %d, 号码: %d", this.patientName, this.patientAge, this.ticketNumber);
+        System.out.printf("您好患者，您的信息如下:\n姓名: %s, 年龄: %d, 号码: %d\n", this.patientName, this.patientAge, this.ticketNumber);
     }
 }
 
