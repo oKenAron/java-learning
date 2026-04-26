@@ -1,18 +1,18 @@
 package day260426_01_hospitalQueueSystem;
 
-class HosTicket {
+class Ticket {
     private final int ticketNumber;
     private final String patientName;
     private final int patientAge;
 
-    public HosTicket(int number, String name, int age){
+    public Ticket(int number, String name, int age) {
         this.ticketNumber = number;
         this.patientName = name;
         this.patientAge = age;
     }
 
-    public int getTicketInfo(int number){
-        return this.ticketNumber;
+    public void getTicketInfo() {
+        System.out.printf("您好患者，您的信息如下:\n姓名: %s, 年龄: %d, 号码: %d", this.patientName, this.patientAge, this.ticketNumber);
     }
 }
 
@@ -20,23 +20,27 @@ class HospitalMachine {
     public static int totalTicket = 0;
     public static int currentTicket = 0;
 
-    public static HosTicket generateTicket(String name, int age){
+    public static Ticket generateTicket(String name, int age) {
         totalTicket++;
-        HosTicket patientTicket = new HosTicket(totalTicket, name, age);
-        return patientTicket;
+        Ticket patient = new Ticket(totalTicket, name, age);
+        return patient;
     }
 
-    public static void callNextPatient(){
+    public static void callNextPatient() {
         currentTicket++;
-        System.out.println("请"+currentTicket+"号患者就诊");
+        System.out.println("请" + currentTicket + "号患者就诊");
     }
 }
 
 
-
 public class Hospital {
     public static void main(String[] args) {
+        Ticket ticketForUserA = HospitalMachine.generateTicket("Trump", 114514);
+        Ticket ticketForUserB = HospitalMachine.generateTicket("Musk", 1919810);
 
-        System.out.println("tbd");
+        ticketForUserA.getTicketInfo();
+        ticketForUserB.getTicketInfo();
+
+        HospitalMachine.callNextPatient();
     }
 }
