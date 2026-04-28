@@ -2,12 +2,9 @@ package day260426_01_hospitalQueueSystem;
 
 // 2026.04.28 update: 将ticketNumber修改回private修饰，并因此建立getTicketNumber方法来读取变量。
 // 添加防御性拦截，避免方法中被注入空值，避免空值调用特定类的方法。但在将该思路应用到Ticket方法时产生报错。
-// 因此该commit保存到这个报错为止。
-
-// 2026.04.27 update: 增加了查票系统，在目前的逻辑中，基于查票来分析个体的队列状态并安排其进入诊室。
-// 实现过程中，修改ticketNumber的变量修饰符，以便checkTicket读取，
-// 对于未来的优化逻辑，一是要更符合现实挂号系统，二是开发过程要考虑到未来运行时这应该是一个实时产号、排队的系统。
-// 而不是在main里预设几个根本不会排队的老登。
+// 修复Ticket报错后，简单优化checkTicket的防御逻辑，将其对其Gemini建议的方法。
+// 次日任务：修正Ticket中不良的防御逻辑，过度防御
+// 并和Gemini探讨防御逻辑是否应该放到Ticket? 亦或是应当放到generictTicket?
 
 class Ticket {
     private final int ticketNumber;
@@ -16,9 +13,15 @@ class Ticket {
 
     public Ticket(int number, String name, int age) {
         // 尝试拦截number是null的情况下的异常，但这里报错了
-        if (number == null || ){
-
+        // 基本数据类型直接保存在栈上，其永远不可能等于 null, 所以不能写成下行的写法
+        // if (number == null || ){
+        // 然而检测异常未必应该放在这里，--等待Gemini的建议--
+        // Gemini认为，目前这个代码不具备阻止错误的能力，只能抛出异常，且存在过度防御。
+        // Gemini建议使用 IllegalArgumentException 抛出异常来熔断错误。
+        if (number <= 0 || name == null || age < 0){
+            System.out.println("检测到数据异常，无法处理。");
         }
+
         this.ticketNumber = number;
         this.patientName = name;
         this.patientAge = age;
@@ -30,7 +33,9 @@ class Ticket {
     public String getTicketInfo() {
         // 单行代码转多行怎么弄，我屏幕小这句溢出了
         // 解决方法: 直接在逗号后回车，多个字符串间在加号后回车。
-        return String.format("姓名: %s, 年龄: %d, 号码: %d\n",
+        // Gemini指点：这里不该有换行符
+        // return String.format("姓名: %s, 年龄: %d, 号码: %d\n",
+        return String.format("姓名: %s, 年龄: %d, 号码: %d",
                 this.patientName, this.patientAge, this.ticketNumber);
     }
 }
@@ -54,10 +59,14 @@ class HospitalMachine {
         // 当然这个工作可能不是这里负责的，因为实际上的叫号器是运行好了之后等人来用，
         // 如果有人输入了不存在的ticket，jvm直接报错就好玩了.
         // Gemini Comment: 需要主动执行防御性拦截。
+        // 主动防御的if逻辑应该和方法的主要工作分开，而不放在一个if else链。
+        // 且建议使用return中断方法。
         if (ticket == null){
             System.out.println("未检测到有效票据，无法处理。");
+            return;
         }
-        else if(ticket.getTicketNumber() < currentTicket){
+
+        if(ticket.getTicketNumber() < currentTicket){
             // 确认过号之后要不要从内存里清除对应的ticket，值得思考。
             System.out.println(ticket.getTicketNumber()+"号患者：过号请重排.");
         }
