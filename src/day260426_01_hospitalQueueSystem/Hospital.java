@@ -1,22 +1,32 @@
 package day260426_01_hospitalQueueSystem;
 
+// 2026.04.28 update: 将ticketNumber修改回private修饰，并因此建立getTicketNumber方法来读取变量。
+// 添加防御性拦截，避免方法中被注入空值，避免空值调用特定类的方法。但在将该思路应用到Ticket方法时产生报错。
+// 因此该commit保存到这个报错为止。
+
 // 2026.04.27 update: 增加了查票系统，在目前的逻辑中，基于查票来分析个体的队列状态并安排其进入诊室。
 // 实现过程中，修改ticketNumber的变量修饰符，以便checkTicket读取，
-// 然而这一行为被指出存在不足，将private通过get方法传递给checkTicket是工程上的更优做法。
 // 对于未来的优化逻辑，一是要更符合现实挂号系统，二是开发过程要考虑到未来运行时这应该是一个实时产号、排队的系统。
 // 而不是在main里预设几个根本不会排队的老登。
 
 class Ticket {
-    protected final int ticketNumber;
+    private final int ticketNumber;
     private final String patientName;
     private final int patientAge;
 
     public Ticket(int number, String name, int age) {
+        // 尝试拦截number是null的情况下的异常，但这里报错了
+        if (number == null || ){
+
+        }
         this.ticketNumber = number;
         this.patientName = name;
         this.patientAge = age;
     }
 
+    public int getTicketNumber(){
+        return this.ticketNumber;
+    }
     public String getTicketInfo() {
         // 单行代码转多行怎么弄，我屏幕小这句溢出了
         // 解决方法: 直接在逗号后回车，多个字符串间在加号后回车。
@@ -44,16 +54,19 @@ class HospitalMachine {
         // 当然这个工作可能不是这里负责的，因为实际上的叫号器是运行好了之后等人来用，
         // 如果有人输入了不存在的ticket，jvm直接报错就好玩了.
         // Gemini Comment: 需要主动执行防御性拦截。
-        if(ticket.ticketNumber < currentTicket){
-            // 确认过号之后要不要从内存里清除对应的ticket，值得思考。
-            System.out.println(ticket.ticketNumber+"号患者：过号请重排.");
+        if (ticket == null){
+            System.out.println("未检测到有效票据，无法处理。");
         }
-        else if(ticket.ticketNumber == currentTicket){
-            System.out.println(ticket.ticketNumber+"号患者：您久等了，请前往n号诊室.");
+        else if(ticket.getTicketNumber() < currentTicket){
+            // 确认过号之后要不要从内存里清除对应的ticket，值得思考。
+            System.out.println(ticket.getTicketNumber()+"号患者：过号请重排.");
+        }
+        else if(ticket.getTicketNumber() == currentTicket){
+            System.out.println(ticket.getTicketNumber()+"号患者：您久等了，请前往n号诊室.");
             // 对号统一走一个验证渠道，可能未必符合大部分医院真实的排号系统
         }
         else {
-            System.out.println((ticket.ticketNumber+"号患者：滚回去排队."));
+            System.out.println((ticket.getTicketNumber()+"号患者：滚回去排队."));
         }
     }
 }
@@ -77,5 +90,6 @@ public class Hospital {
         HospitalMachine.callNextPatient();
         HospitalMachine.callNextPatient();
         HospitalMachine.checkTicket(ticketForUserC);
+        HospitalMachine.checkTicket(null);
     }
 }
