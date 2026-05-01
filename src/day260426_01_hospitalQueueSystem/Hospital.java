@@ -1,10 +1,9 @@
 package day260426_01_hospitalQueueSystem;
 
-// 2026.04.28 update: 将ticketNumber修改回private修饰，并因此建立getTicketNumber方法来读取变量。
-// 添加防御性拦截，避免方法中被注入空值，避免空值调用特定类的方法。但在将该思路应用到Ticket方法时产生报错。
-// 修复Ticket报错后，简单优化checkTicket的防御逻辑，将其对其Gemini建议的方法。
-// 次日任务：修正Ticket中不良的防御逻辑，过度防御
-// 并和Gemini探讨防御逻辑是否应该放到Ticket? 亦或是应当放到generictTicket?
+// 2026.05.01 update: 修正防御逻辑的位置，基于可以触发breakpoint的报错来打断程序。
+// 目前的防御逻辑依然只是一个暂时的设计，最终健壮的系统是应当可以在物理世界中并行处理各个不同的任务
+// （这里要表达的是并非程序就一定并行了，毕竟小脚本跑很快，哪怕非并行大概率也不会出问题）
+// 清理部分comment， 现阶段思考：准备加入scanner
 
 class Ticket {
     private final int ticketNumber;
@@ -12,16 +11,7 @@ class Ticket {
     private final int patientAge;
 
     public Ticket(int number, String name, int age) {
-        // 尝试拦截number是null的情况下的异常，但这里报错了
-        // 基本数据类型直接保存在栈上，其永远不可能等于 null, 所以不能写成下行的写法
-        // if (number == null || ){
-        // 然而检测异常未必应该放在这里，--等待Gemini的建议--
-        // Gemini认为，目前这个代码不具备阻止错误的能力，只能抛出异常，且存在过度防御。
-        // Gemini建议使用 IllegalArgumentException 抛出异常来熔断错误。
-        if (number <= 0 || name == null || age < 0){
-            System.out.println("检测到数据异常，无法处理。");
-        }
-
+        // 2026.05.01 去除防御逻辑，防御应该被放到脏数据产生的位点
         this.ticketNumber = number;
         this.patientName = name;
         this.patientAge = age;
@@ -31,10 +21,6 @@ class Ticket {
         return this.ticketNumber;
     }
     public String getTicketInfo() {
-        // 单行代码转多行怎么弄，我屏幕小这句溢出了
-        // 解决方法: 直接在逗号后回车，多个字符串间在加号后回车。
-        // Gemini指点：这里不该有换行符
-        // return String.format("姓名: %s, 年龄: %d, 号码: %d\n",
         return String.format("姓名: %s, 年龄: %d, 号码: %d",
                 this.patientName, this.patientAge, this.ticketNumber);
     }
@@ -45,6 +31,16 @@ class HospitalMachine {
     public static int currentTicket = 0;
 
     public static Ticket generateTicket(String name, int age) {
+        if (name == null || age < 0 || age > 255){
+            // 下行为 Gemini 辅助生成，我目前对 throw 和 IllegalArgumentException 几乎不了解。
+            // 现阶段的逻辑是遇错直接炸弹炸掉整个主程序
+            // "throw 会像 return 一样立刻终止方法，但它同时会向外丢出一个炸弹"
+            throw new IllegalArgumentException("发号失败：患者姓名为空或年龄不合法！");
+        }
+        // 我猜，更健壮的逻辑是把print放到Ticket后面，保证Ticket真生成了再输出，
+        // 然而这会带来问题就是Ticket得被赋值到变量里再return。
+        // Gemini: 其实这很安全。
+        System.out.println("录入成功，请取号.");
         totalTicket++;
         return new Ticket(totalTicket, name, age);
     }
@@ -55,12 +51,6 @@ class HospitalMachine {
     }
 
     public static void checkTicket(Ticket ticket){
-        // 猜测在最初的if前应该增加一个检验输入Ticket类变量是否存在，
-        // 当然这个工作可能不是这里负责的，因为实际上的叫号器是运行好了之后等人来用，
-        // 如果有人输入了不存在的ticket，jvm直接报错就好玩了.
-        // Gemini Comment: 需要主动执行防御性拦截。
-        // 主动防御的if逻辑应该和方法的主要工作分开，而不放在一个if else链。
-        // 且建议使用return中断方法。
         if (ticket == null){
             System.out.println("未检测到有效票据，无法处理。");
             return;
@@ -68,6 +58,8 @@ class HospitalMachine {
 
         if(ticket.getTicketNumber() < currentTicket){
             // 确认过号之后要不要从内存里清除对应的ticket，值得思考。
+            // 记得gemini指摘过这个想法比较天真，但忘了具体是什么了。
+            // Gemini: GC会处理掉废弃票据。
             System.out.println(ticket.getTicketNumber()+"号患者：过号请重排.");
         }
         else if(ticket.getTicketNumber() == currentTicket){
@@ -83,8 +75,8 @@ class HospitalMachine {
 
 public class Hospital {
     public static void main(String[] args) {
-        Ticket ticketForUserA = HospitalMachine.generateTicket("Trump", 114514);
-        Ticket ticketForUserB = HospitalMachine.generateTicket("Musk", 1919810);
+        Ticket ticketForUserA = HospitalMachine.generateTicket("Trump", 0);
+        Ticket ticketForUserB = HospitalMachine.generateTicket("Musk", 114514);
         Ticket ticketForUserC = HospitalMachine.generateTicket("Vance",1);
 
         System.out.println("您好患者，您的信息如下:\n"+ ticketForUserA.getTicketInfo());
