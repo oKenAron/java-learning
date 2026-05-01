@@ -1,7 +1,9 @@
 package day260426_01_hospitalQueueSystem;
 
-// 2026.05.01 update: 添加Scanner方法，让main可以根据输入执行内容。
-// 清理部分comment
+// 2026.05.01
+// update: 修正 generateTicket 的 Scanner 逻辑，使其符合预期，诉求基本的健壮度。
+// 这里重点需要理解 try catch 的逻辑，且有必要记忆一些基本的报错信息。
+// 具体建议记忆的内容等待 Gemini 指摘.
 
 import java.util.Scanner;
 
@@ -32,22 +34,48 @@ class HospitalMachine {
     private static final Scanner scan = new Scanner(System.in);
 
     public static Ticket generateTicket() {
-        System.out.print("请输入姓名: ");
-        String name = scan.next();
-        if (name == null){
-            // 下行为 Gemini 辅助生成，我目前对 throw 和 IllegalArgumentException 几乎不了解。
-            // 现阶段的逻辑是遇错直接炸弹炸掉整个主程序
-            // "throw 会像 return 一样立刻终止方法，但它同时会向外丢出一个炸弹"
-            throw new IllegalArgumentException("请输入文本");
+        try{
+            System.out.print("请输入文本: ");
+            // 因为姓名很可能包含空格, nextLine 读取整行更鲁棒，另外 trim() 可以帮助砍掉首尾的无意义空格。
+            String name = scan.nextLine().trim();
+            // 在 java 里, null和空字符不是一个东西，这里判断要用 .isEmpty()
+            if (name.isEmpty()){
+                // 自订逻辑炸弹
+                throw new IllegalArgumentException("我说请输入文本，尼尔多隆吗! ");
+            }
+            System.out.print("请输入年龄: ");
+            int age = scan.nextInt();
+            // nextInt()很刁钻，它不会处理到留在管道里的回车，所以要手动处理。
+            scan.nextLine();
+            if (age < 0 || age > 255){
+                // 自订逻辑炸弹
+                throw new IllegalArgumentException("您这年龄一定很有故事! ");
+            }
+            System.out.println("录入成功，请取号.");
+            totalTicket++;
+            return new Ticket(totalTicket, name, age);
         }
-        System.out.print("请输入年龄: ");
-        int age = scan.nextInt();
-        if (age < 0 || age > 255){
-            throw new IllegalArgumentException("您这年龄一定很有故事");
+        catch(java.util.InputMismatchException e){
+            // 这里逻辑和上面我定的错误貌似是不相关的，我大概是这么理解的。
+            // 这里我是照着 Gemini 给的指示写的，所以这部分的语法对我来说是弱肌肉记忆。
+            // 包括java一长串，还有后面接的e，感觉这里e是类似于一般方法使用时括号里定义的变量，
+            // 只不过这个变量e是高度封装的，且在这里至少是作为占位符，下一个catch才用到了e。
+            // 感觉是除了前面的两个if判断的排错外，就只剩下预期int输入怪东西一个脏数据的可能。
+            // 所以才这么写。
+            System.out.println("系统警告：您的年龄光是写下来就是本书! ");
+            // 输入脏东西，nextInt()会报错罢工，这意味着脏东西没被抽走而是卡在管道里，
+            // 一般清空管道就放一个没有头的nextLIne()就行。
+            scan.nextLine();
+            // 因为发号失败了，所以返回null;
+            // 这里返回了null, 恰好对应上checkTicket对null的判断。
+            return null;
         }
-        System.out.println("录入成功，请取号.");
-        totalTicket++;
-        return new Ticket(totalTicket, name, age);
+        catch(IllegalArgumentException e){
+            // e.getMessage() 会提取出throw里写的那句报错语，
+            // 在我的理解里因为这个 error 因为被try来catch了，所以不像一般报错那么输出，
+            System.out.println("系统警告：" + e.getMessage());
+            return null;
+        }
     }
 
     public static void callNextPatient() {
@@ -63,7 +91,7 @@ class HospitalMachine {
 
         if(ticket.getTicketNumber() < currentTicket){
             // 确认过号之后要不要从内存里清除对应的ticket，值得思考。
-            // 记得gemini指摘过这个想法比较天真，但忘了具体是什么了。
+            // 记得 Gemini 指摘过这个想法比较天真，但忘了具体是什么了。
             // Gemini: GC会处理掉废弃票据。
             System.out.println(ticket.getTicketNumber()+"号患者：过号请重排.");
         }
@@ -84,9 +112,15 @@ public class Hospital {
         Ticket ticketForUserB = HospitalMachine.generateTicket();
         Ticket ticketForUserC = HospitalMachine.generateTicket();
 
-        System.out.println("您好患者，您的信息如下:\n"+ ticketForUserA.getTicketInfo());
-        System.out.println("您好患者，您的信息如下:\n"+ ticketForUserB.getTicketInfo());
-        System.out.println("您好患者，您的信息如下:\n"+ ticketForUserC.getTicketInfo());
+        if (ticketForUserA != null){
+            System.out.println("您好患者，您的信息如下:\n"+ ticketForUserA.getTicketInfo());
+        }
+        if (ticketForUserB != null){
+            System.out.println("您好患者，您的信息如下:\n"+ ticketForUserB.getTicketInfo());
+        }
+        if (ticketForUserC != null){
+            System.out.println("您好患者，您的信息如下:\n"+ ticketForUserC.getTicketInfo());
+        }
 
         HospitalMachine.callNextPatient();
         HospitalMachine.checkTicket(ticketForUserA);
