@@ -1,9 +1,9 @@
 package day260426_01_hospitalQueueSystem;
 
-// 2026.05.01 update: 修正防御逻辑的位置，基于可以触发breakpoint的报错来打断程序。
-// 目前的防御逻辑依然只是一个暂时的设计，最终健壮的系统是应当可以在物理世界中并行处理各个不同的任务
-// （这里要表达的是并非程序就一定并行了，毕竟小脚本跑很快，哪怕非并行大概率也不会出问题）
-// 清理部分comment， 现阶段思考：准备加入scanner
+// 2026.05.01 update: 添加Scanner方法，让main可以根据输入执行内容。
+// 清理部分comment
+
+import java.util.Scanner;
 
 class Ticket {
     private final int ticketNumber;
@@ -27,19 +27,24 @@ class Ticket {
 }
 
 class HospitalMachine {
-    public static int totalTicket = 0;
-    public static int currentTicket = 0;
+    private static int totalTicket = 0;
+    private static int currentTicket = 0;
+    private static final Scanner scan = new Scanner(System.in);
 
-    public static Ticket generateTicket(String name, int age) {
-        if (name == null || age < 0 || age > 255){
+    public static Ticket generateTicket() {
+        System.out.print("请输入姓名: ");
+        String name = scan.next();
+        if (name == null){
             // 下行为 Gemini 辅助生成，我目前对 throw 和 IllegalArgumentException 几乎不了解。
             // 现阶段的逻辑是遇错直接炸弹炸掉整个主程序
             // "throw 会像 return 一样立刻终止方法，但它同时会向外丢出一个炸弹"
-            throw new IllegalArgumentException("发号失败：患者姓名为空或年龄不合法！");
+            throw new IllegalArgumentException("请输入文本");
         }
-        // 我猜，更健壮的逻辑是把print放到Ticket后面，保证Ticket真生成了再输出，
-        // 然而这会带来问题就是Ticket得被赋值到变量里再return。
-        // Gemini: 其实这很安全。
+        System.out.print("请输入年龄: ");
+        int age = scan.nextInt();
+        if (age < 0 || age > 255){
+            throw new IllegalArgumentException("您这年龄一定很有故事");
+        }
         System.out.println("录入成功，请取号.");
         totalTicket++;
         return new Ticket(totalTicket, name, age);
@@ -75,9 +80,9 @@ class HospitalMachine {
 
 public class Hospital {
     public static void main(String[] args) {
-        Ticket ticketForUserA = HospitalMachine.generateTicket("Trump", 0);
-        Ticket ticketForUserB = HospitalMachine.generateTicket("Musk", 114514);
-        Ticket ticketForUserC = HospitalMachine.generateTicket("Vance",1);
+        Ticket ticketForUserA = HospitalMachine.generateTicket();
+        Ticket ticketForUserB = HospitalMachine.generateTicket();
+        Ticket ticketForUserC = HospitalMachine.generateTicket();
 
         System.out.println("您好患者，您的信息如下:\n"+ ticketForUserA.getTicketInfo());
         System.out.println("您好患者，您的信息如下:\n"+ ticketForUserB.getTicketInfo());
