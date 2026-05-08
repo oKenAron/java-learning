@@ -1,22 +1,12 @@
 package day260426_01_hospitalQueueSystem;
 
-// 2026.05.07
-// update: 重写 main 方法, 加入死循环.
-// 为了适配死循环, 调整 HospitalMachine 类, 将生成的 Ticket 类变量存放到
-// ArrayList 类型的静态变量中, 调整 generateTicket 类为 void,
-// 因为目前 Ticket 信息已经被完全保存在 HospitalMachine 类中, 没必要 return 了.
-// 现阶段明确需要改进的包括: 将菜单重构为 switch 语法. (不知道是 jdk 还是 idea, 管得倒是挺多
-// 这部分都考虑到了还是挺有趣的); ticketArchive 变量被建议设置为 final, 考虑到 final 的理解可能还不充分
-// 计划在下一个 commit 修正, 但在那之前需要纠正对 final 的认知; totalTicket 和 ticketArchive 的索引
-// 存在功能重叠, 在软件工程中, 这被称为 违背了"单一事实来源"(Single Source of Truth), 未来应当处理掉
-// totalTicket; HospitalMachine.getTicket(number)缺乏异常防御.
+// 2026.05.08
+// 执行了以下改进:
+// 为 HospitalMachine.getTicket(number) 补充异常防御, 但担心不够健壮.
+// 为遵守单一事实来源原则, 将 totalTicket 逻辑由 ticketArchive.size() 代替.
+// 替换轮询逻辑中的 if 为 switch case.
 
-// 修正前 Commit:
-// ========================================================================
-// feature: 将main方法修改为轮询系统
-// 加入死循环以更接近现实方案,
-// 将发号数据调整为存储在HospitalMachine类中, 使用ArrayList方法实现按需发号按需取号.
-// ========================================================================
+// 需要思考: 类中方法需要更可读的排序
 
 import java.util.Scanner;
 import java.util.ArrayList;
@@ -43,10 +33,11 @@ class Ticket {
 }
 
 class HospitalMachine {
-    private static int totalTicket = 0;
+    // 去除 totalTicket 逻辑, 遵守单一事实来源.
+    // private static int totalTicket = 0;
     private static int currentTicket = 0;
     private static final Scanner scan = new Scanner(System.in);
-    private static ArrayList<Ticket> ticketArchive = new ArrayList<>();
+    private static final ArrayList<Ticket> ticketArchive = new ArrayList<>();
     // 尝试将 Ticket 类的对象完全封装在 HospitalMachine 类内, 所以修改为 void.
     public static void generateTicket() {
         try{
@@ -67,9 +58,11 @@ class HospitalMachine {
                 throw new IllegalArgumentException("您这年龄一定很有故事! ");
             }
             System.out.println("录入成功，请取号.");
-            totalTicket++;
-            System.out.println("您的号码是: "+totalTicket);
-            ticketArchive.add(new Ticket(totalTicket, name, age));
+            // 去除 totalTicket 逻辑, 遵守单一事实来源.
+            // totalTicket++;
+            int currentAssignedNumber = ticketArchive.size() + 1;
+            System.out.println("您的号码是: "+currentAssignedNumber);
+            ticketArchive.add(new Ticket(currentAssignedNumber, name, age));
         }
         catch(java.util.InputMismatchException e){
             // 这里逻辑和上面我定的错误貌似是不相关的，我大概是这么理解的。
@@ -121,6 +114,10 @@ class HospitalMachine {
             System.out.println((ticket.getTicketNumber()+"号患者：滚回去排队."));
         }
     }
+
+    public static int getTicketArchiveSize(){
+        return ticketArchive.size();
+    }
 }
 
 
@@ -144,37 +141,48 @@ public class Hospital {
 
             // 健壮的系统不应该将这些功能囊括在一起,
             // 换句话说,现在的系统,绝对不能让患者可以触摸到.
-            if (choice.equals("1")) {
-                HospitalMachine.generateTicket();
-            } else if (choice.equals("2")){
-                HospitalMachine.callNextPatient();
-            } else if (choice.equals("3")){
-                System.out.println("请输入你的号码");
-                try {
-                    int queriedNumber = mainScan.nextInt();
-                    mainScan.nextLine();
-                    HospitalMachine.checkTicket(HospitalMachine.getTicket(queriedNumber));
-                } catch (java.util.InputMismatchException e){
-                    System.out.println("系统警告：这号存在于MAGA的理想国里");
-                    mainScan.nextLine();
-                }
-            } else if (choice.equals("4")){
-                // 并非 HospitalMachine 所属方法, 临时安置
-                System.out.print("MAGA! 让我康康我的票, 我是几号来着:");
-                try {
-                    int myNumber = mainScan.nextInt();
-                    mainScan.nextLine();
-                    System.out.printf("\nMAGA! 我想起来了, 我不是爱泼斯坦, 我是\n"
-                            +HospitalMachine.getTicket(myNumber).getTicketInfo()+"\n");
-                } catch (java.util.InputMismatchException e){
-                    System.out.println("MAGA! 眼睛花了看不清");
-                    mainScan.nextLine();
-                }
-            } else if (choice.equals("0")){
-                System.out.println("下班收工! MAGA!!!");
-                break;
-            } else {
-                System.out.println("你的输入违反了MAGA!");
+            switch (choice){
+                case "1":
+                    HospitalMachine.generateTicket();
+                    break;
+                case "2":
+                    HospitalMachine.callNextPatient();
+                    break;
+                case "3":
+                    System.out.println("请输入你的号码");
+                    try {
+                        int queriedNumber = mainScan.nextInt();
+                        mainScan.nextLine();
+                        HospitalMachine.checkTicket(HospitalMachine.getTicket(queriedNumber));
+                    } catch (java.util.InputMismatchException e){
+                        System.out.println("系统警告：这号存在于MAGA的理想国里");
+                        mainScan.nextLine();
+                    }
+                    break;
+                case "4":
+                    // 并非 HospitalMachine 所属方法, 临时安置
+                    System.out.print("MAGA! 让我康康我的票, 我是几号来着:");
+                    try {
+                        int myNumber = mainScan.nextInt();
+                        mainScan.nextLine();
+                        if (!(myNumber > HospitalMachine.getTicketArchiveSize())){
+                            System.out.printf("\nMAGA! 我想起来了, 我不是爱泼斯坦, 我是\n"
+                                    +HospitalMachine.getTicket(myNumber).getTicketInfo()+"\n");
+                        } else {
+                            // 感觉这里代码健壮性有问题, 但我不确定.
+                            throw new java.util.InputMismatchException();
+                        }
+                    } catch (java.util.InputMismatchException e){
+                        System.out.println("MAGA! 眼睛花了看不清");
+                        mainScan.nextLine();
+                    }
+                    break;
+                case "0":
+                    System.out.println("下班收工! MAGA!!!");
+                    return;
+                default:
+                    System.out.println("你的输入违反了MAGA!");
+                    break;
             }
         }
     }
