@@ -2,14 +2,23 @@ package day260426_01_hospitalQueueSystem;
 
 // 2026.05.08
 // 执行了以下改进:
-// 为 HospitalMachine.getTicket(number) 补充异常防御, 但担心不够健壮.
+// 为 HospitalMachine.getTicket(number) 补充异常防御.
 // 为遵守单一事实来源原则, 将 totalTicket 逻辑由 ticketArchive.size() 代替.
 // 替换轮询逻辑中的 if 为 switch case.
 
 // 需要思考: 类中方法需要更可读的排序
 
+// 修正前 Commit:
+// ========================================================================
+// repair: 修正异常防御逻辑, 核心修改 getTicket(number)
+//
+// - 补充 getTicket 遗漏的异常防御逻辑, 以 null 作为异常的信号传递.
+// - 修正 main 方法 switch 中冗余且不健壮的异常防御逻辑.
+// - 移除冗余的 getTicketArchiveSize()方法.
+// ========================================================================
 import java.util.Scanner;
 import java.util.ArrayList;
+import java.util.InputMismatchException;
 
 class Ticket {
     private final int ticketNumber;
@@ -91,6 +100,10 @@ class HospitalMachine {
     }
 
     public static Ticket getTicket(int number){
+        // 老实说是我忘记了给这里做异常防御
+        if (number <= 0 || number > ticketArchive.size()){
+            return null;
+        }
         return ticketArchive.get(number - 1);
     }
 
@@ -113,10 +126,6 @@ class HospitalMachine {
         else {
             System.out.println((ticket.getTicketNumber()+"号患者：滚回去排队."));
         }
-    }
-
-    public static int getTicketArchiveSize(){
-        return ticketArchive.size();
     }
 }
 
@@ -149,34 +158,37 @@ public class Hospital {
                     HospitalMachine.callNextPatient();
                     break;
                 case "3":
-                    System.out.println("请输入你的号码");
                     try {
+                        System.out.println("请输入你的号码");
                         int queriedNumber = mainScan.nextInt();
                         mainScan.nextLine();
                         HospitalMachine.checkTicket(HospitalMachine.getTicket(queriedNumber));
-                    } catch (java.util.InputMismatchException e){
-                        System.out.println("系统警告：这号存在于MAGA的理想国里");
+                        break;
+                    } catch (InputMismatchException e) {
+                        System.out.println("MAGA人均数学博士");
                         mainScan.nextLine();
+                        break;
                     }
-                    break;
                 case "4":
                     // 并非 HospitalMachine 所属方法, 临时安置
-                    System.out.print("MAGA! 让我康康我的票, 我是几号来着:");
                     try {
+                        System.out.print("MAGA! 让我康康我的票, 我是几号来着:");
                         int myNumber = mainScan.nextInt();
                         mainScan.nextLine();
-                        if (!(myNumber > HospitalMachine.getTicketArchiveSize())){
+                        Ticket myTicket = HospitalMachine.getTicket(myNumber);
+                        if (myTicket != null){
                             System.out.printf("\nMAGA! 我想起来了, 我不是爱泼斯坦, 我是\n"
-                                    +HospitalMachine.getTicket(myNumber).getTicketInfo()+"\n");
+                                    +myTicket.getTicketInfo()+"\n");
                         } else {
-                            // 感觉这里代码健壮性有问题, 但我不确定.
-                            throw new java.util.InputMismatchException();
+                            System.out.println("MAGA! 眼睛花了看不清");
                         }
-                    } catch (java.util.InputMismatchException e){
-                        System.out.println("MAGA! 眼睛花了看不清");
+                        break;
+                    } catch (InputMismatchException e) {
+                        System.out.println("MAGA人均数学博士");
                         mainScan.nextLine();
+                        break;
                     }
-                    break;
+
                 case "0":
                     System.out.println("下班收工! MAGA!!!");
                     return;
