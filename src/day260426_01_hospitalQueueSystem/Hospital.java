@@ -3,12 +3,11 @@ package day260426_01_hospitalQueueSystem;
 // To-Do list
 // ========================================================================
 // 功能性方法内避免直接调用 print, scanner : generateTicket, checkTicket.
-// 将 catch 块中的终端代码块逻辑修正为 continue.
 // ========================================================================
 
 // 修正前 Commit
 // ========================================================================
-// refactor: 修正 catch 块的终止代码块逻辑为 continue
+// refactor: 将 checkTicket 改为返回字符串以解耦 UI 输出
 // ========================================================================
 import java.util.Scanner;
 import java.util.ArrayList;
@@ -74,21 +73,20 @@ class HospitalMachine {
         return ("请" + currentTicket + "号患者就诊");
     }
 
-    public static void checkTicket(Ticket ticket){
+    public static String checkTicket(Ticket ticket){
         if (ticket == null){
-            System.out.println("未检测到有效票据，无法处理。");
-            return;
+            return "未检测到有效票据，无法处理。";
         }
 
         if(ticket.getTicketNumber() < currentTicket){
-            System.out.println(ticket.getTicketNumber()+"号患者：过号请重排.");
+            return (ticket.getTicketNumber()+"号患者：过号请重排.");
         }
         else if(ticket.getTicketNumber() == currentTicket){
-            System.out.println(ticket.getTicketNumber()+"号患者：您久等了，请前往n号诊室.");
+            return (ticket.getTicketNumber()+"号患者：您久等了，请前往n号诊室.");
             // 对号统一走一个验证渠道，可能未必符合大部分医院真实的排号系统
         }
         else {
-            System.out.println((ticket.getTicketNumber()+"号患者：滚回去排队."));
+            return (ticket.getTicketNumber()+"号患者：滚回去排队.");
         }
     }
 
@@ -137,7 +135,7 @@ public class Hospital {
                         continue;
                     }
                     mainScan.nextLine();
-                    HospitalMachine.checkTicket(HospitalMachine.getTicket(queriedNumber));
+                    System.out.println(HospitalMachine.checkTicket(HospitalMachine.getTicket(queriedNumber)));
                     break;
                 case "4":
                     // 并非 HospitalMachine 所属功能, 临时安置
