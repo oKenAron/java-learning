@@ -2,17 +2,13 @@ package day260426_01_hospitalQueueSystem;
 
 // To-Do list
 // ========================================================================
-// try 块调整为只放可能会炸的代码
-//     疑问: genericTicket 也放了一大堆进 try 是不是也要改
-//     回答: main 的职责是"路由调度", 原则上要遵守原子性事务, 尽量小
-//          而 generateTicket 的职责是完整制造, 尽可能保证任何一步都不出错是原则
 // 位置审查, 调整方法顺序
 // checkTicket 方法避免直接调用print
 // ========================================================================
 
 // 修正前 Commit
 // ========================================================================
-// refactor: 缩小 main 方法中 try 块的作用域
+// chore: 调整 HospitalMachine 的方法顺序
 // ========================================================================
 import java.util.Scanner;
 import java.util.ArrayList;
@@ -78,13 +74,6 @@ class HospitalMachine {
         System.out.println("请" + currentTicket + "号患者就诊");
     }
 
-    public static Ticket getTicket(int number){
-        if (number <= 0 || number > ticketArchive.size()){
-            return null;
-        }
-        return ticketArchive.get(number - 1);
-    }
-
     public static void checkTicket(Ticket ticket){
         if (ticket == null){
             System.out.println("未检测到有效票据，无法处理。");
@@ -101,6 +90,13 @@ class HospitalMachine {
         else {
             System.out.println((ticket.getTicketNumber()+"号患者：滚回去排队."));
         }
+    }
+
+    public static Ticket getTicket(int number){
+        if (number <= 0 || number > ticketArchive.size()){
+            return null;
+        }
+        return ticketArchive.get(number - 1);
     }
 }
 
