@@ -2,15 +2,17 @@ package day260426_01_hospitalQueueSystem;
 
 // To-Do list
 // ========================================================================
-// 移除已掌握的提示用 Comment
 // try 块调整为只放可能会炸的代码
+//     疑问: genericTicket 也放了一大堆进 try 是不是也要改
+//     回答: main 的职责是"路由调度", 原则上要遵守原子性事务, 尽量小
+//          而 generateTicket 的职责是完整制造, 尽可能保证任何一步都不出错是原则
 // 位置审查, 调整方法顺序
 // checkTicket 方法避免直接调用print
 // ========================================================================
 
 // 修正前 Commit
 // ========================================================================
-// chore: 移除已掌握概念的学习用注释
+// refactor: 缩小 main 方法中 try 块的作用域
 // ========================================================================
 import java.util.Scanner;
 import java.util.ArrayList;
@@ -129,36 +131,38 @@ public class Hospital {
                     HospitalMachine.callNextPatient();
                     break;
                 case "3":
+                    System.out.println("请输入你的号码");
+                    int queriedNumber;
                     try {
-                        System.out.println("请输入你的号码");
-                        int queriedNumber = mainScan.nextInt();
-                        mainScan.nextLine();
-                        HospitalMachine.checkTicket(HospitalMachine.getTicket(queriedNumber));
-                        break;
+                        queriedNumber = mainScan.nextInt();
                     } catch (InputMismatchException e) {
                         System.out.println("MAGA人均数学博士");
                         mainScan.nextLine();
                         break;
                     }
+                    mainScan.nextLine();
+                    HospitalMachine.checkTicket(HospitalMachine.getTicket(queriedNumber));
+                    break;
                 case "4":
                     // 并非 HospitalMachine 所属功能, 临时安置
+                    System.out.print("MAGA! 让我康康我的票, 我是几号来着:");
+                    int myNumber;
                     try {
-                        System.out.print("MAGA! 让我康康我的票, 我是几号来着:");
-                        int myNumber = mainScan.nextInt();
-                        mainScan.nextLine();
-                        Ticket myTicket = HospitalMachine.getTicket(myNumber);
-                        if (myTicket != null){
-                            System.out.printf("\nMAGA! 我想起来了, 我不是爱泼斯坦, 我是\n"
-                                    +myTicket.getTicketInfo()+"\n");
-                        } else {
-                            System.out.println("MAGA! 眼睛花了看不清");
-                        }
-                        break;
+                        myNumber = mainScan.nextInt();
                     } catch (InputMismatchException e) {
                         System.out.println("MAGA人均数学博士");
                         mainScan.nextLine();
                         break;
                     }
+                    mainScan.nextLine();
+                    Ticket myTicket = HospitalMachine.getTicket(myNumber);
+                    if (myTicket != null){
+                        System.out.printf("\nMAGA! 我想起来了, 我不是爱泼斯坦, 我是\n"
+                                +myTicket.getTicketInfo()+"\n");
+                    } else {
+                        System.out.println("MAGA! 眼睛花了看不清");
+                    }
+                    break;
 
                 case "0":
                     System.out.println("下班收工! MAGA!!!");
