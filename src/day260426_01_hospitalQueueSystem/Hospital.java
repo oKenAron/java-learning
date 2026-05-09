@@ -1,20 +1,16 @@
 package day260426_01_hospitalQueueSystem;
 
-// 2026.05.08
-// 执行了以下改进:
-// 为 HospitalMachine.getTicket(number) 补充异常防御.
-// 为遵守单一事实来源原则, 将 totalTicket 逻辑由 ticketArchive.size() 代替.
-// 替换轮询逻辑中的 if 为 switch case.
-
-// 需要思考: 类中方法需要更可读的排序
-
-// 修正前 Commit:
+// To-Do list
 // ========================================================================
-// repair: 修正异常防御逻辑, 核心修改 getTicket(number)
-//
-// - 补充 getTicket 遗漏的异常防御逻辑, 以 null 作为异常的信号传递.
-// - 修正 main 方法 switch 中冗余且不健壮的异常防御逻辑.
-// - 移除冗余的 getTicketArchiveSize()方法.
+// 移除已掌握的提示用 Comment
+// try 块调整为只放可能会炸的代码
+// 位置审查, 调整方法顺序
+// checkTicket 方法避免直接调用print
+// ========================================================================
+
+// 修正前 Commit
+// ========================================================================
+// chore: 移除已掌握概念的学习用注释
 // ========================================================================
 import java.util.Scanner;
 import java.util.ArrayList;
@@ -26,7 +22,6 @@ class Ticket {
     private final int patientAge;
 
     public Ticket(int number, String name, int age) {
-        // 2026.05.01 去除防御逻辑，防御应该被放到脏数据产生的位点
         this.ticketNumber = number;
         this.patientName = name;
         this.patientAge = age;
@@ -47,23 +42,17 @@ class HospitalMachine {
     private static int currentTicket = 0;
     private static final Scanner scan = new Scanner(System.in);
     private static final ArrayList<Ticket> ticketArchive = new ArrayList<>();
-    // 尝试将 Ticket 类的对象完全封装在 HospitalMachine 类内, 所以修改为 void.
     public static void generateTicket() {
         try{
             System.out.print("请输入姓名: ");
-            // 因为姓名很可能包含空格, nextLine 读取整行更鲁棒，另外 trim() 可以帮助砍掉首尾的无意义空格。
             String name = scan.nextLine().trim();
-            // 在 java 里, null和空字符不是一个东西，这里判断要用 .isEmpty()
             if (name.isEmpty()){
-                // 自订逻辑炸弹
                 throw new IllegalArgumentException("我说请输入文本，尼尔多隆吗! ");
             }
             System.out.print("请输入年龄: ");
             int age = scan.nextInt();
-            // nextInt()很刁钻，它不会处理到留在管道里的回车，所以要手动处理。
             scan.nextLine();
             if (age < 0 || age > 255){
-                // 自订逻辑炸弹
                 throw new IllegalArgumentException("您这年龄一定很有故事! ");
             }
             System.out.println("录入成功，请取号.");
@@ -74,22 +63,10 @@ class HospitalMachine {
             ticketArchive.add(new Ticket(currentAssignedNumber, name, age));
         }
         catch(java.util.InputMismatchException e){
-            // 这里逻辑和上面我定的错误貌似是不相关的，我大概是这么理解的。
-            // 这里我是照着 Gemini 给的指示写的，所以这部分的语法对我来说是弱肌肉记忆。
-            // 包括java一长串，还有后面接的e，感觉这里e是类似于一般方法使用时括号里定义的变量，
-            // 只不过这个变量e是高度封装的，且在这里至少是作为占位符，下一个catch才用到了e。
-            // 感觉是除了前面的两个if判断的排错外，就只剩下预期int输入怪东西一个脏数据的可能。
-            // 所以才这么写。
             System.out.println("系统警告：您的年龄光是写下来就是本书! ");
-            // 输入脏东西，nextInt()会报错罢工，这意味着脏东西没被抽走而是卡在管道里，
-            // 一般清空管道就放一个没有头的nextLIne()就行。
             scan.nextLine();
-            // 因为发号失败了，所以返回null;
-            // 这里返回了null, 恰好对应上checkTicket对null的判断。
         }
         catch(IllegalArgumentException e){
-            // e.getMessage() 会提取出throw里写的那句报错语，
-            // 在我的理解里因为这个 error 因为被try来catch了，所以不像一般报错那么输出，
             System.out.println("系统警告：" + e.getMessage());
         }
     }
@@ -100,7 +77,6 @@ class HospitalMachine {
     }
 
     public static Ticket getTicket(int number){
-        // 老实说是我忘记了给这里做异常防御
         if (number <= 0 || number > ticketArchive.size()){
             return null;
         }
@@ -114,9 +90,6 @@ class HospitalMachine {
         }
 
         if(ticket.getTicketNumber() < currentTicket){
-            // 确认过号之后要不要从内存里清除对应的ticket，值得思考。
-            // 记得 Gemini 指摘过这个想法比较天真，但忘了具体是什么了。
-            // Gemini: GC会处理掉废弃票据。
             System.out.println(ticket.getTicketNumber()+"号患者：过号请重排.");
         }
         else if(ticket.getTicketNumber() == currentTicket){
@@ -134,14 +107,12 @@ public class Hospital {
     public static void main(String[] args) {
         Scanner mainScan = new Scanner(System.in);
 
-        // 基于要求, 在这里写入while true死循环, 虽然符合目前工程上的需求,
-        // 但还是感兴趣while true真的是工程上的最优解吗, 印象里死循环是坏代码.
         while(true) {
             System.out.println("\n=== 欢迎来到红脖子医院 ===");
             System.out.println("1. 老登挂号");
             System.out.println("2. 医生叫号");
             System.out.println("3. 老登查号");
-            // 并非 HospitalMachine 所属方法, 临时安置
+            // 并非 HospitalMachine 所属功能, 临时安置
             System.out.println("4. 老登看号");
             System.out.println("0. 关机下班");
             System.out.print("请输入操作指令：");
@@ -170,7 +141,7 @@ public class Hospital {
                         break;
                     }
                 case "4":
-                    // 并非 HospitalMachine 所属方法, 临时安置
+                    // 并非 HospitalMachine 所属功能, 临时安置
                     try {
                         System.out.print("MAGA! 让我康康我的票, 我是几号来着:");
                         int myNumber = mainScan.nextInt();
