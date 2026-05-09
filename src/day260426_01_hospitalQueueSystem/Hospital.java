@@ -2,13 +2,13 @@ package day260426_01_hospitalQueueSystem;
 
 // To-Do list
 // ========================================================================
-// 位置审查, 调整方法顺序
-// checkTicket 方法避免直接调用print
+// 功能性方法内避免直接调用 print, scanner : generateTicket, checkTicket.
+// 将 catch 块中的终端代码块逻辑修正为 continue.
 // ========================================================================
 
 // 修正前 Commit
 // ========================================================================
-// chore: 调整 HospitalMachine 的方法顺序
+// refactor: 改正 callNextPatient 方法内的 print 调用为传参
 // ========================================================================
 import java.util.Scanner;
 import java.util.ArrayList;
@@ -69,9 +69,9 @@ class HospitalMachine {
         }
     }
 
-    public static void callNextPatient() {
+    public static String callNextPatient() {
         currentTicket++;
-        System.out.println("请" + currentTicket + "号患者就诊");
+        return ("请" + currentTicket + "号患者就诊");
     }
 
     public static void checkTicket(Ticket ticket){
@@ -124,7 +124,7 @@ public class Hospital {
                     HospitalMachine.generateTicket();
                     break;
                 case "2":
-                    HospitalMachine.callNextPatient();
+                    System.out.println(HospitalMachine.callNextPatient());
                     break;
                 case "3":
                     System.out.println("请输入你的号码");
