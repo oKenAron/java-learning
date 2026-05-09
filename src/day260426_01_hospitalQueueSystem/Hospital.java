@@ -8,7 +8,7 @@ package day260426_01_hospitalQueueSystem;
 
 // 修正前 Commit
 // ========================================================================
-// refactor: 改正 callNextPatient 方法内的 print 调用为传参
+// refactor: 修正 catch 块的终止代码块逻辑为 continue
 // ========================================================================
 import java.util.Scanner;
 import java.util.ArrayList;
@@ -134,7 +134,7 @@ public class Hospital {
                     } catch (InputMismatchException e) {
                         System.out.println("MAGA人均数学博士");
                         mainScan.nextLine();
-                        break;
+                        continue;
                     }
                     mainScan.nextLine();
                     HospitalMachine.checkTicket(HospitalMachine.getTicket(queriedNumber));
@@ -148,7 +148,7 @@ public class Hospital {
                     } catch (InputMismatchException e) {
                         System.out.println("MAGA人均数学博士");
                         mainScan.nextLine();
-                        break;
+                        continue;
                     }
                     mainScan.nextLine();
                     Ticket myTicket = HospitalMachine.getTicket(myNumber);
