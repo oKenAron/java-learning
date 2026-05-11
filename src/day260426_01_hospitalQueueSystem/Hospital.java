@@ -2,12 +2,14 @@ package day260426_01_hospitalQueueSystem;
 
 // To-Do list
 // ========================================================================
-// 功能性方法内避免直接调用 print, scanner : generateTicket, checkTicket.
+// 功能性方法内避免直接调用 print, scanner : generateTicket.
 // ========================================================================
 
 // 修正前 Commit
 // ========================================================================
-// refactor: 将 checkTicket 改为返回字符串以解耦 UI 输出
+// refactor: 将 generateTicket 改为返回 int 以解耦 UI 输出
+//
+// - 补全含参方法内部异常防御机制
 // ========================================================================
 import java.util.Scanner;
 import java.util.ArrayList;
@@ -19,6 +21,9 @@ class Ticket {
     private final int patientAge;
 
     public Ticket(int number, String name, int age) {
+        if (number <= 0 || name == null || name.isEmpty() || age < 0 || age > 255){
+            throw new IllegalArgumentException("error:数据输入异常");
+        }
         this.ticketNumber = number;
         this.patientName = name;
         this.patientAge = age;
@@ -37,35 +42,16 @@ class HospitalMachine {
     // 去除 totalTicket 逻辑, 遵守单一事实来源.
     // private static int totalTicket = 0;
     private static int currentTicket = 0;
-    private static final Scanner scan = new Scanner(System.in);
     private static final ArrayList<Ticket> ticketArchive = new ArrayList<>();
-    public static void generateTicket() {
-        try{
-            System.out.print("请输入姓名: ");
-            String name = scan.nextLine().trim();
-            if (name.isEmpty()){
-                throw new IllegalArgumentException("我说请输入文本，尼尔多隆吗! ");
-            }
-            System.out.print("请输入年龄: ");
-            int age = scan.nextInt();
-            scan.nextLine();
-            if (age < 0 || age > 255){
-                throw new IllegalArgumentException("您这年龄一定很有故事! ");
-            }
-            System.out.println("录入成功，请取号.");
-            // 去除 totalTicket 逻辑, 遵守单一事实来源.
-            // totalTicket++;
-            int currentAssignedNumber = ticketArchive.size() + 1;
-            System.out.println("您的号码是: "+currentAssignedNumber);
-            ticketArchive.add(new Ticket(currentAssignedNumber, name, age));
+    public static int generateTicket(String name, int age) {
+        // 底部方法层不应信任一切传入的数据, 即便将异常防御写在了外部
+        // 内部依然有必要保留异常防御
+        if (name == null || name.isEmpty() || age < 0 || age > 255){
+            throw new IllegalArgumentException("error:数据输入异常");
         }
-        catch(java.util.InputMismatchException e){
-            System.out.println("系统警告：您的年龄光是写下来就是本书! ");
-            scan.nextLine();
-        }
-        catch(IllegalArgumentException e){
-            System.out.println("系统警告：" + e.getMessage());
-        }
+
+        ticketArchive.add(new Ticket(ticketArchive.size() + 1, name, age));
+        return ticketArchive.size();
     }
 
     public static String callNextPatient() {
@@ -101,7 +87,7 @@ class HospitalMachine {
 
 public class Hospital {
     public static void main(String[] args) {
-        Scanner mainScan = new Scanner(System.in);
+        Scanner scan = new Scanner(System.in);
 
         while(true) {
             System.out.println("\n=== 欢迎来到红脖子医院 ===");
@@ -113,13 +99,49 @@ public class Hospital {
             System.out.println("0. 关机下班");
             System.out.print("请输入操作指令：");
 
-            String choice = mainScan.nextLine().trim();
+            String choice = scan.nextLine().trim();
 
             // 健壮的系统不应该将这些功能囊括在一起,
             // 换句话说,现在的系统,绝对不能让患者可以触摸到.
             switch (choice){
                 case "1":
-                    HospitalMachine.generateTicket();
+                    String name;
+                    int age;
+                    while(true){
+                        System.out.print("请输入姓名: ");
+                        name = scan.nextLine().trim();
+                        if (name.isEmpty()){
+                            System.out.println("输入不合法: 我说请输入文本,尼尔多隆吗");
+                            continue;
+                        }
+                        break;
+                    }
+                    while(true){
+                        System.out.print("请输入年龄: ");
+                        try {
+                            age = scan.nextInt();
+                        } catch(InputMismatchException e){
+                            System.out.println("输入不合法: MAGA写年龄人均是首诗.");
+                            // 不要忘记洗管道
+                            scan.nextLine();
+                            continue;
+                        }
+                        if (age < 0 || age > 255){
+                            System.out.println("输入不合法: MAGA的存在是薛定谔叠加态");
+                            // 不要忘记洗管道
+                            scan.nextLine();
+                            continue;
+                        }
+                        scan.nextLine();
+                        break;
+                    }
+                    try {
+                        int ticketNumber = HospitalMachine.generateTicket(name,age);
+                        System.out.println("录入成功, 您的号码是: " + ticketNumber);
+                    } catch (IllegalArgumentException e){
+                        System.out.println(e.getMessage());
+                    }
+
                     break;
                 case "2":
                     System.out.println(HospitalMachine.callNextPatient());
@@ -128,13 +150,13 @@ public class Hospital {
                     System.out.println("请输入你的号码");
                     int queriedNumber;
                     try {
-                        queriedNumber = mainScan.nextInt();
+                        queriedNumber = scan.nextInt();
                     } catch (InputMismatchException e) {
                         System.out.println("MAGA人均数学博士");
-                        mainScan.nextLine();
+                        scan.nextLine();
                         continue;
                     }
-                    mainScan.nextLine();
+                    scan.nextLine();
                     System.out.println(HospitalMachine.checkTicket(HospitalMachine.getTicket(queriedNumber)));
                     break;
                 case "4":
@@ -142,13 +164,13 @@ public class Hospital {
                     System.out.print("MAGA! 让我康康我的票, 我是几号来着:");
                     int myNumber;
                     try {
-                        myNumber = mainScan.nextInt();
+                        myNumber = scan.nextInt();
                     } catch (InputMismatchException e) {
                         System.out.println("MAGA人均数学博士");
-                        mainScan.nextLine();
+                        scan.nextLine();
                         continue;
                     }
-                    mainScan.nextLine();
+                    scan.nextLine();
                     Ticket myTicket = HospitalMachine.getTicket(myNumber);
                     if (myTicket != null){
                         System.out.printf("\nMAGA! 我想起来了, 我不是爱泼斯坦, 我是\n"
