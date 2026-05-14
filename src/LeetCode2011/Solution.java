@@ -3,10 +3,10 @@ package LeetCode2011;
 public class Solution {
     public int finalValueAfterOperations(String[] operations) {
         int X = 0;
-        for (int i = 0; i < operations.length; i++) {
-            if (operations[i].equals("X++") || operations[i].equals("++X")) {
+        for (String op: operations) {
+            if (op.equals("X++") || op.equals("++X")) {
                 X++;
-            } else if (operations[i].equals("X--") || operations[i].equals("--X")) {
+            } else if (op.equals("X--") || op.equals("--X")) {
                 X--;
             }
         }
