@@ -5,18 +5,16 @@ import java.util.Arrays;
 
 class Solution {
     public int[] recoverOrder(int[] order, int[] friends) {
-        ArrayList<Integer> ansTmp = new ArrayList<>();
-        for (int ord : order) {
+        int[] ans = new int[friends.length];
+        int index = 0;
+        for (int id : order) {
             for (int friend : friends) {
-                if (ord == friend) {
-                    ansTmp.add(ord);
+                if (id == friend) {
+                    ans[index] = friend;
+                    index++;
                     break;
                 }
             }
-        }
-        int[] ans = new int[ansTmp.size()];
-        for (int i = 0; i < ans.length; i++) {
-            ans[i] = ansTmp.get(i);
         }
         return ans;
     }
