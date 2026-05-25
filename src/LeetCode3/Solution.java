@@ -1,41 +1,33 @@
 package LeetCode3;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 
 class Solution {
     public int lengthOfLongestSubstring(String s) {
-        // 防御性编程(此为提交前AI审查发现的疏漏)
-        if (s == null || s.isEmpty()) return 0;
+        if (s == null) return 0;
 
-        // 语法糖错误用法
-        // int max = int sign = 1;
-        // 正确用法如下
-        int max = 1, sign = 1;
-        ArrayList<Character> tmp = new ArrayList<>();
-        tmp.add(s.charAt(0));
-        for (int i = 1; i < s.length(); i++) {
-            for (int j = 0; j < tmp.size(); j++) {
-                if (tmp.get(j) == s.charAt(i)) {
-                    for (int k = 0; k <= j; k++) {
-                        sign -= 1;
-                        // 这个会报警
-                        tmp.remove(0);
-                    }
-                    break;
-                }
+        HashSet<Character> set = new HashSet<>();
+        int left = 0;
+        int max = 0;
+        int len = s.length();
+        for (int right = 0; right < len; right++) {
+            while (set.contains(s.charAt(right))) {
+                set.remove(s.charAt(left++));
             }
-            sign += 1;
-            tmp.add(s.charAt(i));
-            if (sign > max) max = sign;
+            set.add(s.charAt(right));
+            // max = Math.max(max, right - left + 1);
+            if (max < right - left + 1) max = right - left + 1;
         }
         return max;
     }
 
-    public static void main(String[] args){
+    public static void main(String[] args) {
         Solution sol = new Solution();
 
         System.out.println(sol.lengthOfLongestSubstring("abcabcbb"));
         System.out.println(sol.lengthOfLongestSubstring("bbbbb"));
         System.out.println(sol.lengthOfLongestSubstring("pwwkew"));
+        System.out.println(sol.lengthOfLongestSubstring(""));
+        System.out.println(sol.lengthOfLongestSubstring(null));
     }
 }
