@@ -4,13 +4,15 @@ import java.util.Arrays;
 
 class Solution {
     public int[] findDegrees(int[][] matrix) {
-        int[] ans = new int[matrix.length];
-        for (int i = 0; i < matrix.length; i++){
+        // 提取变量 matrix.length, 以达到视觉清爽 & 用代码声明业务逻辑的目的.
+        int n = matrix.length;
+        int[] ans = new int[n];
+        for (int i = 0; i < n; i++){
             int degreeCount = 0;
-            // 这里 matrix[i].length 在整道题里都是固定值, 甚至和 matrix.length 一致,
-            // 是不是说这里换成一个特定变量效率更高, 类似疑问很早我就有了, 但在这道题我感觉这个问题最突出.
-            for (int j = 0; j < matrix[i].length; j++){
-                if(matrix[i][j] == 1) degreeCount += 1;
+            for (int j = 0; j < n; j++){
+                // 因为只有 0 和 1，直接累加取代 if 判断.
+                // if(matrix[i][j] == 1) degreeCount += 1;
+                degreeCount += matrix[i][j];
             }
             ans[i] = degreeCount;
         }
