@@ -1,60 +1,32 @@
 package LeetCode13;
 
 class Solution {
+    public int romanCharToInt(char c){
+        return switch(c){
+            case 'I' -> 1;
+            case 'V' -> 5;
+            case 'X' -> 10;
+            case 'L' -> 50;
+            case 'C' -> 100;
+            case 'D' -> 500;
+            case 'M' -> 1000;
+            default -> 0;
+        };
+    }
     public int romanToInt(String s) {
         int len = s.length();
         int ans = 0;
-        for (int i = 0; i < len; i++) {
-            switch(s.charAt(i)){
-                case 'I':
-                    ans += 1;
-                    break;
-                case 'V':
-                    if (i != 0 && s.charAt(i-1) == 'I'){
-                        ans += 3;
-                    } else {
-                        ans += 5;
-                    }
-                    break;
-                case 'X':
-                    if (i != 0 && s.charAt(i-1) == 'I'){
-                        ans += 8;
-                    } else {
-                        ans += 10;
-                    }
-                    break;
-                case 'L':
-                    if (i != 0 && s.charAt(i-1) == 'X'){
-                        ans += 30;
-                    } else {
-                        ans += 50;
-                    }
-                    break;
-                case 'C':
-                    if (i != 0 && s.charAt(i-1) == 'X'){
-                        ans += 80;
-                    } else {
-                        ans += 100;
-                    }
-                    break;
-                case 'D':
-                    if (i != 0 && s.charAt(i-1) == 'C'){
-                        ans += 300;
-                    } else {
-                        ans += 500;
-                    }
-                    break;
-                case 'M':
-                    if (i != 0 && s.charAt(i-1) == 'C'){
-                        ans += 800;
-                    } else {
-                        ans += 1000;
-                    }
-                    break;
-                default:
-                    break;
+        int nextValue = romanCharToInt(s.charAt(0));
+        for (int i = 0; i < len - 1; i++) {
+            int currentValue = nextValue;
+            nextValue = romanCharToInt(s.charAt(i + 1));
+            if (currentValue < nextValue){
+                ans -= currentValue;
+            } else {
+                ans += currentValue;
             }
         }
+        ans += nextValue;
         return ans;
     }
 
