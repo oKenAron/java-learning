@@ -12,7 +12,7 @@ class Solution {
                }
            }
         }
-        return new int[]{0,0};
+        throw new IllegalArgumentException("No Two Sum Solution");
     }
 
     public static void main(String[] args) {
