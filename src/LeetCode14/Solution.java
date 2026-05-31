@@ -1,38 +1,21 @@
 package LeetCode14;
 
-import java.util.HashMap;
-
 class Solution {
     public String longestCommonPrefix(String[] strs) {
-        // 代码最初缺乏防御性判断。虽然题目说 1 <= strs.length，但养成习惯总是好的
+        // 养成习惯日常生活 str 输入要防御
         if (strs == null || strs.length == 0) return "";
+        int len = strs.length;
 
-        HashMap<Integer, Character> map = new HashMap<>();
-        for(int i = 0; i < strs[0].length(); i++){
-            map.put(i, strs[0].charAt(i));
-        }
-        for (int i = 1; i < strs.length; i++){
-            int prefixLength = Math.min(map.size(), strs[i].length());
-            while (map.size() > prefixLength){
-                map.remove(map.size() - 1);
-            }
-            int sign = prefixLength;
-            for (int j = 0; j < prefixLength; j++){
-                if (map.get(j) != strs[i].charAt(j)) {
-                    sign = j;
-                    break;
-                }
-            }
-            while (prefixLength - sign > 0){
-                map.remove(map.size() - 1);
-                sign++;
+        String prefixString = strs[0];
+        for (int i = 1; i < len; i++){
+            while (!strs[i].startsWith(prefixString)){
+                prefixString = prefixString.substring(0, prefixString.length() - 1);
+                // 我没加这个代码跑测试还是正常过了 为啥
+                // 答案: 不加语法上是没问题的, startsWith 一个空字符串永远是 true, 但既然已经空了, 后面的判断根本没必要跑了.
+                if (prefixString.isEmpty()) return "";
             }
         }
-        StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < map.size(); i++){
-            builder.append(map.get(i));
-        }
-        return builder.toString();
+        return prefixString;
     }
 
     public static void main(String[] args){
